@@ -1,10 +1,15 @@
 package org.checkerframework.checker.nonempty;
 
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.nonempty.qual.Delegate;
+import org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -15,6 +20,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -46,6 +52,32 @@ public class NonEmptyTransfer extends CFTransfer {
     this.mapSize = TreeUtils.getMethod("java.util.Map", "size", 0, this.env);
     this.indexOf = TreeUtils.getMethod("java.util.List", "indexOf", 1, this.env);
     this.aTypeFactory = (NonEmptyAnnotatedTypeFactory) analysis.getTypeFactory();
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitMethodInvocation(
+      MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
+    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(n.getTreePath());
+    if (enclosingMethodTree == null || TreeUtils.isConstructor(enclosingMethodTree)) {
+      return result;
+    }
+    Tree receiverTree = n.getTarget().getReceiver().getTree();
+    if (receiverTree == null) {
+      return result;
+    }
+    Element receiver = TreeUtils.elementFromTree(receiverTree);
+    Element enclosingMethod = TreeUtils.elementFromDeclaration(enclosingMethodTree);
+    AnnotationMirror delegateAnno = aTypeFactory.getDeclAnnotation(receiver, Delegate.class);
+    AnnotationMirror nonEmptyConditionalPostconditionAnno =
+        aTypeFactory.getDeclAnnotation(enclosingMethod, EnsuresNonEmptyIf.class);
+    if (delegateAnno == null || nonEmptyConditionalPostconditionAnno == null) {
+      return result;
+    }
+    JavaExpression thisExpr = JavaExpression.getImplicitReceiver(receiver);
+    refineStoreForDelegationInvocation(
+        thisExpr, JavaExpression.fromNode(n.getTarget().getReceiver()), result);
+    return result;
   }
 
   @Override
@@ -122,6 +154,26 @@ public class NonEmptyTransfer extends CFTransfer {
     Node switchNode = assign.getExpression();
     refineSwitchStatement(switchNode, caseOperands, result.getThenStore(), result.getElseStore());
     return result;
+  }
+
+  // TODO: documentation
+  private void refineStoreForDelegationInvocation(
+      JavaExpression targetExpr, JavaExpression delegate, TransferResult<CFValue, CFStore> result) {
+    if (result.containsTwoStores()) {
+      // Update the "then" store
+      CFStore thenStore = result.getThenStore();
+      CFValue delegateThenStoreValue = thenStore.getValue(delegate);
+      thenStore.replaceValue(targetExpr, delegateThenStoreValue);
+
+      // Update the "else" store
+      CFStore elseStore = result.getElseStore();
+      CFValue delegateElseStoreValue = elseStore.getValue(delegate);
+      elseStore.replaceValue(targetExpr, delegateElseStoreValue);
+    } else {
+      CFStore store = result.getRegularStore();
+      CFValue delegateStoreValue = store.getValue(delegate);
+      store.replaceValue(targetExpr, delegateStoreValue);
+    }
   }
 
   /**
