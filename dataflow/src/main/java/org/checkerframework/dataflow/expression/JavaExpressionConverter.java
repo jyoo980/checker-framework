@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.expression;
 
 import java.util.List;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.plumelib.util.CollectionsPlume;
@@ -99,6 +100,58 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
   @Override
   protected JavaExpression visitThisReference(ThisReference thisExpr, Void unused) {
     return thisExpr;
+  }
+
+  @Override
+  protected JavaExpression visitSuperReference(SuperReference superReference, Void unused) {
+    return superReference;
+  }
+
+  @Override
+  protected JavaExpression visitLambda(Lambda lambdaExpr, Void unused) {
+    return lambdaExpr;
+  }
+
+  @Override
+  protected JavaExpression visitMethodReference(MethodReference methodReferenceExpr, Void unused) {
+    MethodReferenceScope scope = convert(methodReferenceExpr.scope);
+    MethodReferenceTarget target = convert(methodReferenceExpr.target);
+    return new MethodReference(
+        methodReferenceExpr.type,
+        scope,
+        target); // TODO: where is the type of a method reference even set?
+  }
+
+  /**
+   * Converts a method reference scope for use in the creation of a method reference JavaExpression.
+   *
+   * @param scope the method reference scope
+   * @return a method reference scope to be used in the creation of a method reference
+   *     JavaExpression
+   */
+  private MethodReferenceScope convert(MethodReferenceScope scope) {
+    JavaExpression expression = null;
+    if (scope.getExpression() != null) {
+      expression = convert(scope.getExpression());
+    }
+    TypeMirror type = null;
+    if (scope.getType() != null) {
+      type = scope.getType();
+    }
+    return new MethodReferenceScope(expression, type, scope.isSuper());
+  }
+
+  /**
+   * Converts a method reference target for use in the creation of a method reference
+   * JavaExpression.
+   *
+   * @param target the method reference target
+   * @return a method reference target to be used in the creation of a method reference
+   *     JavaExpression
+   */
+  private MethodReferenceTarget convert(MethodReferenceTarget target) {
+    return new MethodReferenceTarget(
+        target.getTypeArguments(), target.getIdentifier(), target.isConstructorCall());
   }
 
   @Override
