@@ -113,9 +113,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                 AnnotationMirror top = entry.getValue();
                 if (type.hasPrimaryAnnotation(poly)) {
                   type.removePrimaryAnnotation(poly);
+                  // Do not add qualifiers to type variables and wildcards.
                   if (type.getKind() != TypeKind.TYPEVAR && type.getKind() != TypeKind.WILDCARD) {
-                    // Do not add qualifiers to type variables and
-                    // wildcards
+                    // It's not a type variable or wildcard.
                     type.addAnnotation(this.qualHierarchy.getBottomAnnotation(top));
                   }
                 }

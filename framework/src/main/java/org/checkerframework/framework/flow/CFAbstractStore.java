@@ -600,7 +600,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected void insertValue(
       JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
     computeNewValueAndInsert(
-        expr, value, (old, newValue) -> newValue.mostSpecific(old, null), permitNondeterministic);
+        expr,
+        value,
+        (old, newValue) -> {
+          return newValue.mostSpecific(old, null);
+        },
+        permitNondeterministic);
   }
 
   /**
