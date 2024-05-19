@@ -466,7 +466,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    */
   public TransferResult<V, S> lookupResult(Node node) {
     Block block = node.getBlock();
-    TransferInput<V, S> blockInput = stores.get(block);
+    TransferInput<V, S> blockInput = inputs.get(block);
     IdentityHashMap<Node, TransferResult<V, S>> cache = analysisCaches.get(blockInput);
     TransferResult<V, S> result = cache.get(node);
     return result;
