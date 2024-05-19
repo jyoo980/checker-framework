@@ -91,6 +91,22 @@ public class ViewpointAdaptJavaExpression extends JavaExpressionConverter {
   }
 
   @Override
+  protected JavaExpression visitLambda(Lambda lambdaExpr, Void unused) {
+    if (lambdaExpr != null) {
+      return lambdaExpr;
+    }
+    return super.visitLambda(lambdaExpr, unused);
+  }
+
+  @Override
+  protected JavaExpression visitMethodReference(MethodReference methodReferenceExpr, Void unused) {
+    if (methodReferenceExpr != null) {
+      return methodReferenceExpr;
+    }
+    return super.visitMethodReference(methodReferenceExpr, unused); // Stub?
+  }
+
+  @Override
   protected JavaExpression visitFormalParameter(FormalParameter parameterExpr, Void unused) {
     if (args != null) {
       int index = parameterExpr.getIndex() - 1;
