@@ -1318,7 +1318,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (hasOption("dumpOnErrors")) {
       StringBuilder msg = new StringBuilder();
       for (StackTraceElement elem : trace) {
-        msg.append("\tat " + elem + "\n");
+        msg.append("\tat " + elem + System.lineSeparator());
       }
       message(Diagnostic.Kind.NOTE, msg.toString());
     }
