@@ -327,8 +327,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         if (showWpiFailedInferences) {
           printFailedInferenceDebugMessage(
               "Annotations cannot be placed on varargs parameters in -Ainfer=jaifs mode, because"
-                  + " the JAIF format does not correctly support it."
-                  + System.lineSeparator()
+                  + " the JAIF format does not correctly support it. "
                   + "The signature of the method whose varargs parameter was not annotated is: "
                   + JVMNames.getJVMMethodSignature(methodElt));
         }
@@ -364,8 +363,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
               printFailedInferenceDebugMessage(
                   "Javac cannot create an array type "
                       + "from a wildcard, so WPI did not attempt to infer a type for an array "
-                      + "parameter."
-                      + System.lineSeparator()
+                      + "parameter. "
                       + "The signature of the method whose parameter had inference skipped is: "
                       + JVMNames.getJVMMethodSignature(methodElt));
             }
@@ -596,9 +594,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         printFailedInferenceDebugMessage(
             "Could not update from formal parameter "
                 + "assignment, because an ArrayCreationNode with a null tree is created when "
-                + "the parameter is a variable-length list."
-                + System.lineSeparator()
-                + "Parameter: "
+                + "the parameter is a variable-length list. Parameter: "
                 + paramElt);
       }
       return;
@@ -617,9 +613,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         printFailedInferenceDebugMessage(
             "Could not update from formal "
                 + "parameter assignment inside a lambda expression, because lambda parameters "
-                + "cannot be annotated."
-                + System.lineSeparator()
-                + "Parameter: "
+                + "cannot be annotated. Parameter: "
                 + paramElt);
       }
       return;
