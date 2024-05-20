@@ -184,7 +184,7 @@ public class OptionalTransfer extends CFTransfer {
         } else {
           insertIntoStores(result, internalRepr, PRESENT);
         }
-        return withResultAnnotation(result, PRESENT);
+        return recreateTransferResult(PRESENT, result);
       }
     }
     return result;

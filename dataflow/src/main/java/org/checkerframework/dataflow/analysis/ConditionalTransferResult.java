@@ -116,11 +116,6 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
   }
 
   @Override
-  public ConditionalTransferResult<V, S> withResultValue(V resultValue) {
-    return new ConditionalTransferResult<V, S>(resultValue, thenStore, elseStore);
-  }
-
-  @Override
   public S getRegularStore() {
     return thenStore.leastUpperBound(elseStore);
   }

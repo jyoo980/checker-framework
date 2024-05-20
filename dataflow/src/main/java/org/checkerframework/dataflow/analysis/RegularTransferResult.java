@@ -109,11 +109,6 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
   }
 
   @Override
-  public RegularTransferResult<V, S> withResultValue(V resultValue) {
-    return new RegularTransferResult<V, S>(resultValue, store);
-  }
-
-  @Override
   public S getRegularStore() {
     return store;
   }
