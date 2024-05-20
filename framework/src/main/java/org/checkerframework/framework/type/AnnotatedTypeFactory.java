@@ -178,7 +178,7 @@ import org.plumelib.util.SystemPlume;
 public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /** Whether to output verbose, low-level debugging messages about {@link #getAnnotatedType}. */
-  private static final boolean debugGat = false;
+  private static final boolean debugGat = true;
 
   /** Whether to print verbose debugging messages about stub files. */
   private final boolean debugStubParser;
@@ -1691,8 +1691,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Creates an AnnotatedTypeMirror for an ExpressionTree. The AnnotatedTypeMirror contains explicit
    * annotations written on the expression and for some expressions, annotations from
    * sub-expressions that could have been explicitly written, defaulted, refined, or otherwise
-   * computed. (Expression whose type include annotations from sub-expressions are: ArrayAccessTree,
-   * ConditionalExpressionTree, IdentifierTree, MemberSelectTree, and MethodInvocationTree.)
+   * computed. (Expressions whose type include annotations from sub-expressions are:
+   * ArrayAccessTree, ConditionalExpressionTree, IdentifierTree, MemberSelectTree, and
+   * MethodInvocationTree.)
    *
    * <p>For example, the AnnotatedTypeMirror returned for an array access expression is the fully
    * annotated type of the array component of the array being accessed.

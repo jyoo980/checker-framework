@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.util;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
+import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
@@ -15,6 +16,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /** A utility class to operate on a given {@link Node}. */
 public class NodeUtils {
@@ -70,6 +72,17 @@ public class NodeUtils {
     }
     ExecutableElement invoked = ((MethodInvocationNode) node).getTarget().getMethod();
     return ElementUtils.isMethod(invoked, method, env);
+  }
+
+  /** Returns true iff {@code node} is an invocation of one of the given methods. */
+  public static boolean isMethodInvocation(
+      Node node, List<ExecutableElement> methods, ProcessingEnvironment env) {
+    if (!(node instanceof MethodInvocationNode)) {
+      return false;
+    }
+    ExecutableElement invoked = ((MethodInvocationNode) node).getTarget().getMethod();
+    return CollectionsPlume.anyMatch(
+        methods, method -> ElementUtils.isMethod(invoked, method, env));
   }
 
   /**

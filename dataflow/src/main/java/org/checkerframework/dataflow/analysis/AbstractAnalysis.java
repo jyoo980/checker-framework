@@ -431,8 +431,8 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Updates the value of node {@code node} to the value of the {@code transferResult}. Returns true
-   * if the node's value changed, or a store was updated.
+   * Updates the value of node {@code node} in {@link #nodeValues} to the value of the {@code
+   * transferResult}. Returns true if the node's value changed, or a store was updated.
    *
    * @param node the node to update
    * @param transferResult the transfer result being updated
@@ -444,6 +444,7 @@ public abstract class AbstractAnalysis<
     if (newVal != null) {
       V oldVal = nodeValues.get(node);
       nodeValues.put(node, newVal);
+      System.out.printf("nodeValues.put(%s, %s)%n", node, newVal);
       nodeValueChanged = !Objects.equals(oldVal, newVal);
     }
     return nodeValueChanged || transferResult.storeChanged();

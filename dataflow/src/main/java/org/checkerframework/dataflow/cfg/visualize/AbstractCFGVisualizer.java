@@ -18,6 +18,7 @@ import org.checkerframework.dataflow.analysis.Analysis.Direction;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.analysis.TransferInput;
+import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
@@ -323,7 +324,10 @@ public abstract class AbstractCFGVisualizer<
       storesFrom = analysis.getResult();
       Node lastNode = bb.getLastNode();
       if (lastNode != null) {
-        resultValue = analysis.getResult().lookupResult(lastNode).getResultValue();
+        TransferResult<V, S> tResult = analysis.getResult().lookupResult(lastNode);
+        if (tResult != null) {
+          resultValue = tResult.getResultValue();
+        }
       }
     } else if (analysisDirection == Direction.BACKWARD && where == VisualizeWhere.BEFORE) {
       regularStore = analysis.getResult().getStoreBefore(bb);

@@ -146,7 +146,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Whether to output verbose, low-level debugging messages. Also see {@code TreeAnnotator.debug}
    * and {@link AnnotatedTypeFactory#debugGat}.
    */
-  private static final boolean debug = false;
+  private static final boolean debug = true;
 
   /** To cache the supported monotonic type qualifiers. */
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
@@ -1912,15 +1912,18 @@ public abstract class GenericAnnotatedTypeFactory<
 
     if (iUseFlow) {
       Value inferred = getInferredValueFor(tree);
+      log(
+          "%s GATF.addComputedTypeAnnotations#8(%s, %s), inferred=%s%n",
+          thisClass, treeString, type, inferred);
       if (inferred != null) {
         applyInferredAnnotations(type, inferred);
         log(
-            "%s GATF.addComputedTypeAnnotations#8(%s, %s), inferred=%s%n",
+            "%s GATF.addComputedTypeAnnotations#9(%s, %s), inferred=%s%n",
             thisClass, treeString, type, inferred);
       }
     }
     log(
-        "%s GATF.addComputedTypeAnnotations#9(%s, %s, %s) done%n",
+        "%s GATF.addComputedTypeAnnotations#10(%s, %s, %s) done%n",
         thisClass, treeString, type, iUseFlow);
   }
 
@@ -1982,14 +1985,18 @@ public abstract class GenericAnnotatedTypeFactory<
       // When parsing stub or ajava files, the analysis is not running (it has not yet
       // started), and flowResult is null (no analysis has occurred). Instead of attempting to
       // find a non-existent inferred type, return null.
+      log("GATF.getInferredValueFor(%s): analysis.isRunning()==false and flowResult==null%n", tree);
       return null;
     }
     Value as = null;
     if (analysis.isRunning()) {
       as = analysis.getValue(tree);
+      log("GATF.getInferredValueFor(%s): [analysis.isRunning()==true] => %s%n", tree, as);
     }
     if (as == null) {
       as = flowResult.getValue(tree);
+      log("GATF.getInferredValueFor(%s): [from flowResult.getValue(tree)] => %s%n", tree, as);
+      log("GATF.getInferredValueFor(%s): flowResult=%s%n", tree, flowResult);
     }
     return as;
   }

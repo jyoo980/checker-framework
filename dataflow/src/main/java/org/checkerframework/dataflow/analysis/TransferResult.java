@@ -69,6 +69,14 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
   }
 
   /**
+   * Returns a copy of this, but with the given result value.
+   *
+   * @param resultValue the new result value
+   * @return a copy of this, but with the given result value
+   */
+  public abstract TransferResult<V, S> withResultValue(V resultValue);
+
+  /**
    * Returns the regular result store produced if no exception is thrown by the {@link
    * org.checkerframework.dataflow.cfg.node.Node} corresponding to this transfer function result.
    *

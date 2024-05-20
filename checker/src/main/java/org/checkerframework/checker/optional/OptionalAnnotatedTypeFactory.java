@@ -5,12 +5,15 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.function.Function;
+import java.util.List;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nonempty.NonEmptyAnnotatedTypeFactory;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -24,11 +27,30 @@ import org.checkerframework.javacutil.TreeUtils;
 /** OptionalAnnotatedTypeFactory for the Optional Checker. */
 public class OptionalAnnotatedTypeFactory extends NonEmptyAnnotatedTypeFactory {
 
+  /** The @{@link Present} annotation. */
+  protected final AnnotationMirror PRESENT = AnnotationBuilder.fromClass(elements, Present.class);
+
   /** The element for java.util.Optional.map(). */
   private final ExecutableElement optionalMap;
 
-  /** The @{@link Present} annotation. */
-  protected final AnnotationMirror PRESENT = AnnotationBuilder.fromClass(elements, Present.class);
+  /** The element for java.util.stream.Stream.max(), or null. */
+  private final @Nullable ExecutableElement streamMax;
+
+  /** The element for java.util.stream.Stream.min(), or null. */
+  private final @Nullable ExecutableElement streamMin;
+
+  /** The element for java.util.stream.Stream.reduce(BinaryOperator&lt;T&gt;), or null. */
+  private final @Nullable ExecutableElement streamReduceNoIdentity;
+
+  /** The element for java.util.stream.Stream.findFirst(), or null. */
+  private final @Nullable ExecutableElement streamFindFirst;
+
+  /** The element for java.util.stream.Stream.findAny(), or null. */
+  private final @Nullable ExecutableElement streamFindAny;
+
+  /** Stream methods such that if the input is @NonEmpty, the result is @Present. */
+  @SuppressWarnings("UnusedVariable")
+  private final List<ExecutableElement> nonEmptyToPresentStreamMethods;
 
   /**
    * Creates an OptionalAnnotatedTypeFactory.
@@ -38,7 +60,18 @@ public class OptionalAnnotatedTypeFactory extends NonEmptyAnnotatedTypeFactory {
   public OptionalAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     postInit();
-    optionalMap = TreeUtils.getMethodOrNull("java.util.Optional", "map", 1, getProcessingEnv());
+
+    ProcessingEnvironment env = getProcessingEnv();
+
+    optionalMap = TreeUtils.getMethod("java.util.Optional", "map", 1, env);
+
+    streamMax = TreeUtils.getMethodOrNull("java.util.stream.Stream", "max", 1, env);
+    streamMin = TreeUtils.getMethodOrNull("java.util.stream.Stream", "min", 1, env);
+    streamReduceNoIdentity = TreeUtils.getMethodOrNull("java.util.stream.Stream", "reduce", 1, env);
+    streamFindFirst = TreeUtils.getMethodOrNull("java.util.stream.Stream", "findFirst", 0, env);
+    streamFindAny = TreeUtils.getMethodOrNull("java.util.stream.Stream", "findAny", 0, env);
+    nonEmptyToPresentStreamMethods =
+        Arrays.asList(streamMax, streamMin, streamReduceNoIdentity, streamFindFirst, streamFindAny);
   }
 
   @Override
@@ -49,38 +82,42 @@ public class OptionalAnnotatedTypeFactory extends NonEmptyAnnotatedTypeFactory {
   }
 
   /**
-   * If {@code tree} is a call to {@link java.util.Optional#map(Function)} whose argument is a
-   * method reference, then this method adds {@code @Present} to {@code type} if the following is
-   * true:
+   * If {@code tree} is {@code someOptional.map(methodReference)}, then this method adds
+   * {@code @Present} to {@code type} if:
    *
    * <ul>
-   *   <li>The type of the receiver to {@link java.util.Optional#map(Function)} is {@code @Present},
-   *       and
-   *   <li>{@link #returnHasNullable(MemberReferenceTree)} returns false.
+   *   <li>{@code someOptional} is {@code @Present} and
+   *   <li>{@code methodReference}'s return type is non-null.
    * </ul>
    *
    * @param tree a tree
    * @param type the type of the tree, which may be side-effected by this method
    */
   private void optionalMapNonNull(Tree tree, AnnotatedTypeMirror type) {
+    System.out.printf("optionalMapNonNull#1(%s, %s)%n", tree, type);
     if (!TreeUtils.isMethodInvocation(tree, optionalMap, processingEnv)) {
       return;
     }
+    System.out.printf("optionalMapNonNull#2(%s, %s)%n", tree, type);
     MethodInvocationTree mapTree = (MethodInvocationTree) tree;
     ExpressionTree argTree = mapTree.getArguments().get(0);
     if (argTree.getKind() == Kind.MEMBER_REFERENCE) {
+      System.out.printf("optionalMapNonNull#3(%s, %s)%n", tree, type);
       MemberReferenceTree memberReferenceTree = (MemberReferenceTree) argTree;
       AnnotatedTypeMirror optType = getReceiverType(mapTree);
       if (optType == null || !optType.hasEffectiveAnnotation(Present.class)) {
         return;
       }
+      System.out.printf("optionalMapNonNull#4(%s, %s)%n", tree, type);
       if (!returnHasNullable(memberReferenceTree)) {
+        System.out.printf("optionalMapNonNull#5(%s, %s)%n", tree, type);
         // The method still could have a @PolyNull on the return and might return null.
         // If @PolyNull is the primary annotation on the parameter and not on any type
         // arguments or array elements, then it is still safe to mark the optional type as
         // present.
         // TODO: Add the check for poly null on arguments.
         type.replaceAnnotation(PRESENT);
+        System.out.printf("optionalMapNonNull#6(%s, %s)%n", tree, type);
       }
     }
   }
