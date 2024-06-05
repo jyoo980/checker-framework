@@ -992,7 +992,7 @@ public abstract class JavaExpression {
       receiverTree = TreeUtils.getReceiverTree(receiverTree);
     }
     if (receiverTree instanceof MethodInvocationTree) {
-      return JavaExpression.getReceiver(receiverTree);
+      return JavaExpression.getInitialReceiverOfMethodInvocation(receiverTree);
     }
     return JavaExpression.fromTree(receiverTree);
   }
