@@ -111,6 +111,7 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
   protected JavaExpression visitMethodReference(MethodReference methodReferenceExpr, Void unused) {
     MethodReferenceScope scope = convert(methodReferenceExpr.scope);
     MethodReferenceTarget target = convert(methodReferenceExpr.target);
+    // TODO: If target is a constructor, then this method can adjust the type appropriately.
     return new MethodReference(
         methodReferenceExpr.type, // TODO: type may be inconsistent with the new scope or target.
         scope,
@@ -139,6 +140,7 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
    *     JavaExpression
    */
   private MethodReferenceTarget convert(MethodReferenceTarget target) {
+    // TODO: Why not just return "target"?
     return new MethodReferenceTarget(
         target.getTypeArguments(), target.getIdentifier(), target.isConstructor());
   }
