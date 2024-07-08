@@ -112,9 +112,9 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
     MethodReferenceScope scope = convert(methodReferenceExpr.scope);
     MethodReferenceTarget target = convert(methodReferenceExpr.target);
     return new MethodReference(
-        methodReferenceExpr.type,
+        methodReferenceExpr.type, // TODO: type may be inconsistent with the new scope or target.
         scope,
-        target); // TODO: where is the type of a method reference even set?
+        target);
   }
 
   /**
@@ -124,14 +124,9 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
    * @return a method reference scope to be used in the creation of a MethodReference JavaExpression
    */
   private MethodReferenceScope convert(MethodReferenceScope scope) {
-    JavaExpression expression = null;
-    if (scope.getExpression() != null) {
-      expression = convert(scope.getExpression());
-    }
-    TypeMirror type = null;
-    if (scope.getType() != null) {
-      type = scope.getType();
-    }
+    JavaExpression expression =
+        (scope.getExpression() == null) ? null : convert(scope.getExpression());
+    TypeMirror type = scope.getType();
     return new MethodReferenceScope(expression, type, scope.isSuper());
   }
 
